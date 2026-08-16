@@ -1,16 +1,12 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
-import { envSchema } from './common/configration/env-schema.validation';
-import { defaultEnv } from './common/configration/enviroment-modes/default.env';
-import configMapping from './common/configration/config-mapping';
+import { CustomExceptionFilter } from './common/error-handling/filters/custom-exception.filter';
+import { APP_FILTER } from '@nestjs/core';
+import { CoreModule } from './core.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({ isGlobal: true, validationSchema: envSchema ,load:[configMapping]}),
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [CoreModule, UsersModule, AuthModule],
+  providers: [{ provide: APP_FILTER, useClass: CustomExceptionFilter }],
 })
 export class AppModule {}
