@@ -2,12 +2,15 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { EnviromentInterface } from './common/configration/enviroment.interface';
-import { Logger, ValidationPipe } from '@nestjs/common';
-import { CustomExceptionFilter } from './common/error-handling/filters/custom-exception.filter';
-import { i18nValidationErrorFactory, I18nValidationExceptionFilter, I18nValidationPipe } from 'nestjs-i18n';
+import { ConsoleLogger, Logger } from '@nestjs/common';
+import { I18nValidationPipe } from 'nestjs-i18n';
+import { SwaggerConfig } from './common/swagger/swagger-config';
+
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule,{
+    logger :new ConsoleLogger({json:process.env.NODE_ENV === "production"}),
+  });
 
   app.useGlobalPipes(
     new I18nValidationPipe({
@@ -17,8 +20,7 @@ async function bootstrap() {
     }),
   );
   // app.useGlobalFilters(new I18nValidationExceptionFilter({detailedErrors :false}));
-
-
+  SwaggerConfig.setUp(app);
 
   const configServive = app.get(ConfigService<EnviromentInterface>);
   const port = configServive.getOrThrow<number>('PORT');

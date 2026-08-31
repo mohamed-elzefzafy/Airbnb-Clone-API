@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
-import { CustomExceptionFilter } from './common/error-handling/filters/custom-exception.filter';
-import { APP_FILTER } from '@nestjs/core';
 import { CoreModule } from './core.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { CountriesModule } from './countries/countries.module';
 
 @Module({
-  imports: [CoreModule, UsersModule, AuthModule],
-  providers: [{ provide: APP_FILTER, useClass: CustomExceptionFilter }],
+  imports: [CoreModule, UsersModule, AuthModule, CountriesModule],
+  providers: [],
 })
 export class AppModule {}
