@@ -1,20 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { CountryResponseDto } from '../dtos/country-response.dto';
 import { BadRequestException } from 'src/common/error-handling/custom-exceptions/bad-request.exception';
-import { plainToInstance } from 'class-transformer';
 import { CountryRepository } from '../repository/country.repository';
 
 @Injectable()
-export class FindCountryByIdUsecase {
+export class SoftDeleteCountryUsecase {
   constructor(private readonly countryRepository: CountryRepository) {}
-
-  async execute(
-    id: string,
-  ): Promise<CountryResponseDto> {
-    const country = await this.countryRepository.findOne({ _id: id, isDeleted: false });
+  async execute(id: string): Promise<void> {
+    const country = await this.countryRepository
+      .findOne({ _id: id, isDeleted: false });
     if (!country) {
       throw new BadRequestException('country not exist');
     }
-    return plainToInstance(CountryResponseDto, country.toObject());
+    country.isDeleted = true;
+    country.deletedAt = new Date();
+    await country.save();
   }
 }

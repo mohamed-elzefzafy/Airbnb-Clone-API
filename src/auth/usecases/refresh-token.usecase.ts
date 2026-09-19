@@ -5,17 +5,14 @@ import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshTokenDto } from '../dtos/refreshToken.dto';
 import { ForbiddenException } from 'src/common/error-handling/custom-exceptions/forbidden.exception';
-import { InjectModel } from '@nestjs/mongoose';
-import { RefreshToken } from '../schemas/refresh-token.schema';
-import { Model } from 'mongoose';
+import { RefreshTokenRepository } from '../repository/refresh-token.repository';
 
 @Injectable()
 export class RefreshTokenUseCase {
   constructor(
     private readonly generateTokenUseCase: GenerateTokenUseCase,
     private readonly jwtService: JwtService,
-    @InjectModel(RefreshToken.name)
-    private readonly refreshTokenModel: Model<RefreshToken>,
+      private readonly refreshTokenRepository: RefreshTokenRepository,
   ) {}
 
   async execute(refreshTokenDto: RefreshTokenDto) {
@@ -36,7 +33,7 @@ export class RefreshTokenUseCase {
     if (!decodedToken || decodedToken.type !== 'refresh') {
       throw new BadRequestException('Invalid refresh token');
     }
-    const refreshTokenDoc = await this.refreshTokenModel.findOne({
+    const refreshTokenDoc = await this.refreshTokenRepository.findOne({
       userId: decodedToken.userId,
     });
     if (!refreshTokenDoc) {

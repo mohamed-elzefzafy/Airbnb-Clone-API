@@ -14,6 +14,8 @@ import { RegisterUseCase } from './usecases/register.usecase';
 import { GenerateTokenUseCase } from './usecases/generateToken.usecase';
 import { LoginUseCase } from './usecases/login.usecase';
 import { RefreshTokenUseCase } from './usecases/refresh-token.usecase';
+import { ModelNames } from 'src/common/data-access/model-names.enum';
+import { RefreshTokenRepository } from './repository/refresh-token.repository';
 
 @Module({
   providers: [
@@ -22,12 +24,13 @@ import { RefreshTokenUseCase } from './usecases/refresh-token.usecase';
     GenerateTokenUseCase,
     LoginUseCase,
     RefreshTokenUseCase,
+    RefreshTokenRepository
   ],
   controllers: [AuthController],
   imports: [
     UsersModule,
     MongooseModule.forFeature([
-      { name: RefreshToken.name, schema: RefreshTokenSchema },
+      { name: ModelNames.REFRESH_TOKENS, schema: RefreshTokenSchema },
     ]),
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService<EnviromentInterface>) => ({

@@ -1,19 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Country } from '../schemas/countries.schema';
-import { Model } from 'mongoose';
+import { Model, QueryFilter } from 'mongoose';
 import { CountryResponseDto } from '../dtos/country-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { FindAllDto } from '../dtos/find-all.dto';
+import { ModelNames } from 'src/common/data-access/model-names.enum';
+import { CountryRepository } from '../repository/country.repository';
+import { PaginatedResult } from 'src/common/data-access/base-repository';
 
 @Injectable()
 export class FindAllCountriesUsecase {
-  constructor(
-    @InjectModel(Country.name)
-    private readonly countryModel: Model<Country>,
-  ) {}
+  constructor(private readonly countryRepository: CountryRepository) {}
 
-  async execute(): Promise<CountryResponseDto[]> {
-    const countries = await this.countryModel.find().exec();
-  return countries.map(c => plainToInstance(CountryResponseDto,c.toObject()))
+  async execute(
+    query: FindAllDto,
+  ): Promise<PaginatedResult<CountryResponseDto>> {
+    const matchQuery: QueryFilter<Country> = { isDeleted: { $ne: true } };
+    if (query?.name) matchQuery.name = { $regex: query.name, $options: 'i' };
+    if (query?.countryCode) matchQuery.countryCode = query.countryCode;
+
+    const result = await this.countryRepository.findPaginated(matchQuery, {
+      page: query?.page,
+      limit: query?.limit,
+      ignoreLimit: query?.ignoreLimit,
+      lean: true,
+    });
+
+    return plainToInstance(PaginatedResult<CountryResponseDto>, result);
   }
+
 }

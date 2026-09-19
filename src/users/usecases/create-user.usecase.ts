@@ -1,25 +1,23 @@
 import { Injectable } from "@nestjs/common";
 import { BadRequestException } from "src/common/error-handling/custom-exceptions/bad-request.exception";
 import * as bcrypt from 'bcryptjs';
-import { InjectModel } from "@nestjs/mongoose";
-import { User } from "../schemas/user.schema";
-import { Model } from "mongoose";
 import { CreateUserDto } from "../dtos/create-user.dto";
 import { UserResponseDto } from "../dtos/user-response.dto";
 import { plainToInstance } from "class-transformer";
+import { UserRepository } from "../repository/user.repository";
 
 @Injectable()
 export class CreateUserUseCase {
-  constructor(  @InjectModel(User.name) private readonly userModel: Model<User>,) {}
+  constructor(private readonly userRepository: UserRepository) {}
   async execute(createUserDto: CreateUserDto):Promise<UserResponseDto> {
-        const exitigUserByEmail = await this.userModel.findOne({
+        const exitigUserByEmail = await this.userRepository.findOne({
       email: createUserDto.email,
     });
     if (exitigUserByEmail) {
       throw new BadRequestException('User with this email already exists');
     }
 
-    const exitigUserByPhone = await this.userModel.findOne({
+    const exitigUserByPhone = await this.userRepository.findOne({
       phoneNumber: createUserDto.phoneNumber,
     });
     if (exitigUserByPhone) {
@@ -28,7 +26,7 @@ export class CreateUserUseCase {
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
-  const createdUser =  await this.userModel.create({ ...createUserDto, password: hashedPassword });
+  const createdUser =  await this.userRepository.create({ ...createUserDto, password: hashedPassword });
   return plainToInstance(UserResponseDto,createdUser.toObject());
   }
 }

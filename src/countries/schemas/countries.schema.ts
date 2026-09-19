@@ -11,8 +11,8 @@ export class Country {
   @Prop({ default: false })
   isDeleted!: boolean;
 
-  @Prop()
-  deletedAt!: Date;
+@Prop({ type: Date, default: null })
+deletedAt!: Date | null;
 }
 
 export const CountrySchema = SchemaFactory.createForClass(Country);
